@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Unity.Collections;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-
+//FIXXXXX
 //Fix Out of Rooms Bug
 public class ProceduralGeneration : MonoBehaviour
 {
@@ -30,7 +32,7 @@ public class ProceduralGeneration : MonoBehaviour
     const int EMPTY = 0;
     const int WALL = 1;
     const int SOLID = 2;
-    const int PILLAR = 3; 
+    const int PILLAR = 3;
 
     public int CellSize = 16;
     public int RoomID = 0;
@@ -42,18 +44,22 @@ public class ProceduralGeneration : MonoBehaviour
     public List<Room> Rooms;
     private float Timer = 0f;
 
+    private int terrainExtensionCount = 0;
+    private int[,] lastMap;
+
     void Start()
     {
         Width = RoomWidth / CellSize + (RoomWidth % CellSize > 0 ? 1 : 0);
         Height = RoomHeight / CellSize + (RoomHeight % CellSize > 0 ? 1 : 0);
         Map = new int[Width, Height];
+        lastMap = Map;
         Regions = new List<List<float[]>>();
         Rooms = new List<Room>();
         Timer = Time.time;
 
 
         Debug.Log($"Map Size: Width={Width}, Height={Height}");
-        RandomFill();
+        RandomFill(Map);
 
         int open = 0;
         for (int x = 0; x < Width; x++)
@@ -63,14 +69,108 @@ public class ProceduralGeneration : MonoBehaviour
 
 
         for (int i = 0; i < smooth; i++)
-            SmoothAll();
-        SetupRooms();
+            SmoothAll(Map);
+        SetupRooms(Map);
         ConnectRooms();
-        DrawMapWithRoomEdges();
-        // PrintMapToConsole();
+        DrawMapWithRoomEdges(Map);
+        PrintMapToConsole(Map);
     }
 
-    void DrawMapWithRoomEdges()
+
+    // void Update()
+    // {
+    //     if (Input.GetKeyDown(KeyCode.Space))
+    //     {
+    //         int[,] newMap = new int[Width, Height];
+
+    //         ExtendTerrain(newMap);
+    //         lastMap = newMap;
+    //         terrainExtensionCount++;
+    //     }
+    // }
+
+
+
+    void ExtendTerrain(int[,] NewMap)
+    {
+        // 1. Generate new terrain
+        RandomFill(NewMap);
+        for (int i = 0; i < smooth; i++)
+            SmoothAll(NewMap);
+        SetupRooms(NewMap);
+
+        // 2. Find rightmost edge from lastMap
+        int[] rightEdge = null;
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = Width - 1; x >= 0; x--)
+            {
+                if (lastMap[x, y] == EMPTY)
+                {
+                    rightEdge = new int[] { x, y };
+                    break;
+                }
+            }
+            if (rightEdge != null) break;
+        }
+
+        // 3. Find leftmost edge from NewMap
+        int[] leftEdge = null;
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                if (NewMap[x, y] == EMPTY)
+                {
+                    leftEdge = new int[] { x, y };
+                    break;
+                }
+            }
+            if (leftEdge != null) break;
+        }
+
+        // 4. Draw all terrains so far
+        TileMap.ClearAllTiles();
+        for (int t = 0; t <= terrainExtensionCount; t++)
+        {
+            int[,] mapToDraw = (t == terrainExtensionCount) ? NewMap : lastMap;
+            int xOffset = t * Width * TileSpacing;
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    Vector3Int tilePos = new Vector3Int(x * TileSpacing + xOffset, y * TileSpacing, 0);
+                    if (mapToDraw[x, y] == EMPTY)
+                        TileMap.SetTile(tilePos, GroundTile);
+                    else if (mapToDraw[x, y] == SOLID)
+                        TileMap.SetTile(tilePos, null);
+                }
+            }
+        }
+
+        // 5. Connect the two terrains with a bridge
+        if (rightEdge != null && leftEdge != null)
+        {
+            int xOffset = terrainExtensionCount * Width;
+            int[] leftEdgeWorld = new int[] { leftEdge[0] + xOffset, leftEdge[1] };
+            int[] rightEdgeWorld = new int[] { rightEdge[0] + (terrainExtensionCount - 1) * Width, rightEdge[1] };
+            float len = Vector2.Distance(new Vector2(rightEdgeWorld[0], rightEdgeWorld[1]), new Vector2(leftEdgeWorld[0], leftEdgeWorld[1]));
+            for (int i = 0; i <= len; i++)
+            {
+                float ratio = i / len;
+                float x1 = Mathf.Lerp(rightEdgeWorld[0], leftEdgeWorld[0], ratio);
+                float y1 = Mathf.Lerp(rightEdgeWorld[1], leftEdgeWorld[1], ratio);
+                Vector3Int tilePos = new Vector3Int(Mathf.RoundToInt(x1) * TileSpacing, Mathf.RoundToInt(y1) * TileSpacing, 0);
+                TileMap.SetTile(tilePos, GroundTile);
+            }
+        }
+    }
+
+
+
+
+
+    void DrawMapWithRoomEdges(int[,] Map)
     {
         // Define colors for room edges
         Color[] colors = new Color[]
@@ -124,7 +224,7 @@ public class ProceduralGeneration : MonoBehaviour
 
                     if (isEdge)
                     {
-                        TileMap.SetTile(tilePos, Wall);
+                        TileMap.SetTile(tilePos, null);
                     }
                 }
             }
@@ -145,7 +245,18 @@ public class ProceduralGeneration : MonoBehaviour
 
 
 
-    void PrintMapToConsole()
+    void ConnectTerrain()
+    {
+        //Generates a new Map and connects it with the already Existing one.
+
+        int[,] newMap = new int[Width, Height];
+
+
+    }
+
+
+
+    void PrintMapToConsole(int[,] Map)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
@@ -188,7 +299,7 @@ public class ProceduralGeneration : MonoBehaviour
         return grid[point[0], point[1]];
     }
 
-    void RandomFill()
+    void RandomFill(int[,] Map)
     {
         for (int j = 0; j < Height; j++)
         {
@@ -206,7 +317,7 @@ public class ProceduralGeneration : MonoBehaviour
         }
     }
 
-    int SmoothIndex(int x, int y)
+    int SmoothIndex(int x, int y, int[,] Map)
     {
         int neighbors = 0;
         int[,] list = new int[,]
@@ -231,7 +342,7 @@ public class ProceduralGeneration : MonoBehaviour
             return mapValue;
     }
 
-    void SmoothAll()
+    void SmoothAll(int[,] Map)
     {
         int Sep = 3;
         int Len = smooth * Sep;
@@ -255,13 +366,13 @@ public class ProceduralGeneration : MonoBehaviour
                             i = i - Stopi + Start;
                         }
                     }
-                    Map[i, sj] = SmoothIndex(i, sj);
+                    Map[i, sj] = SmoothIndex(i, sj, Map);
                 }
             }
         }
     }
 
-    List<float[]> FindRoom(int[,] checkGrid, int value, int[] pos)
+    List<float[]> FindRoom(int[,] checkGrid, int value, int[] pos, int[,] Map)
     {
         List<float[]> Saved = new List<float[]>();
         Stack<int[]> Check = new Stack<int[]>();
@@ -320,7 +431,7 @@ public class ProceduralGeneration : MonoBehaviour
         return Saved;
     }
 
-    void SetupRooms()
+    void SetupRooms(int[,] Map)
     {
         Regions = new List<List<float[]>>();
         Rooms = new List<Room>();
@@ -344,7 +455,7 @@ public class ProceduralGeneration : MonoBehaviour
             int[] pos = positions[positions.Count - 1];
             positions.RemoveAt(positions.Count - 1);
 
-            var temp = FindRoom(checkGrid, 0, pos);
+            var temp = FindRoom(checkGrid, 0, pos, Map);
             int size = temp.Count;
 
             if (size > 0)
@@ -384,7 +495,7 @@ public class ProceduralGeneration : MonoBehaviour
         Rooms.Sort((a, b) => b.Tiles.Count - a.Tiles.Count);
     }
 
-    public void FillArray(int xcell, int ycell, int radius, int value)
+    public void FillArray(int xcell, int ycell, int radius, int value, int[,] Map)
     {
         int radiusSquared = radius * radius;
         int minX = Mathf.Max(0, xcell - radius);
@@ -443,7 +554,7 @@ public class ProceduralGeneration : MonoBehaviour
             }
             if (roomsLeft.Count > 0 && rmIndex >= 0)
             {
-                MakeBridge(p1, p2);
+                MakeBridge(p1, p2, Map);
                 blob.AddRange(roomsLeft[rmIndex].Edges);
                 roomsLeft.RemoveAt(rmIndex);
                 count = roomsLeft.Count;
@@ -455,7 +566,7 @@ public class ProceduralGeneration : MonoBehaviour
         }
     }
 
-    public void MakeBridge(int[] pntA, int[] pntB)
+    public void MakeBridge(int[] pntA, int[] pntB, int[,] Map)
     {
         float len = Vector2.Distance(new Vector2(pntA[0], pntA[1]), new Vector2(pntB[0], pntB[1]));
         for (int i = 0; i <= len; i++)
@@ -466,7 +577,7 @@ public class ProceduralGeneration : MonoBehaviour
             int r1 = Mathf.Abs((int)(2 * Mathf.Cos(ratio * Mathf.PI))) + 1;
             int xi = Mathf.FloorToInt(Mathf.Clamp(x1, r1 + 1, Width - 2 - r1));
             int yi = Mathf.FloorToInt(Mathf.Clamp(y1, r1 + 1, Height - 2 - r1));
-            FillArray(xi, yi, r1, 0);
+            FillArray(xi, yi, r1, 0, Map);
         }
     }
 

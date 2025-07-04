@@ -1,23 +1,17 @@
-using UnityEditor.Animations;
 using UnityEngine;
 
-public class PlayerAnimationController : MonoBehaviour
+[RequireComponent(typeof(PlayerController))]
+public class PlayerAnimationController : EntityAnimationController
 {
-    private AnimatorC animatorC;
     private PlayerController playerController;
 
-    private string PlayerSpritesheet = "";
-
-    private readonly int IDLE = Animator.StringToHash("");
-
-
-    AnimatorController CreateAnimatorController()
+    private void Awake()
     {
-        return null;
+        playerController = GetComponent<PlayerController>();
     }
 
-    AnimationClip GenerateAnimationClips()
+    private void Update()
     {
-        return null;
+        Animate(playerController.AnimationClipHashes);
     }
 }
