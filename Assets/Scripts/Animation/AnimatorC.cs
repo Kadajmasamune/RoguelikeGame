@@ -9,7 +9,7 @@ using UnityEditor;
 #endif
 
 [RequireComponent(typeof(Animator))]
-public class AnimatorC : MonoBehaviour 
+public class AnimatorC : MonoBehaviour
 {
     private Animator animator;
     private int currentAnimationHash = -1;
@@ -19,10 +19,10 @@ public class AnimatorC : MonoBehaviour
         animator = GetComponent<Animator>();
     }
 
-    public void ChangeAnimation(Dictionary<string, int> animationDict, int targetHash, float delay = 0.0f, float crossfade = 0.2f)
+    public void ChangeAnimation(Dictionary<string, int> animationDict, int targetHash, float delay = 0.0f, float crossfade = 0.05f)
     {
-        if (currentAnimationHash == targetHash) return;
-
+        if (currentAnimationHash == targetHash || animator.IsInTransition(0)) return;
+        
         if (delay > 0f)
         {
             StartCoroutine(WaitAndPlay());

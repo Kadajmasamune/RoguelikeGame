@@ -6,9 +6,11 @@ public class IdleState : AnimState
 {
     public Direction requiredDirection;
 
-    public override bool ShouldEnter(IHasDirection entity)
+    public override bool ShouldEnter(IHasDirection entity, Vector2 velocity , IHasBooleans flags)
     {
-        return entity.CurrentDirection == requiredDirection;
+        if (flags.IsRolling) return false;
+        
+        return entity.CurrentDirection == requiredDirection && velocity.magnitude < 0.01f;
     }
 
 }

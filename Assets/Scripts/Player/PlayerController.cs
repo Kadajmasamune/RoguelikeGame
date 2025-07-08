@@ -3,25 +3,50 @@ using Common;
 using System.Collections.Generic;
 using UnityEditor.Animations;
 
-public class PlayerController : MonoBehaviour, IHasDirection
+public class PlayerController : MonoBehaviour, IHasDirection, IHasVelocity, IHasBooleans
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float RollSpeed;
+    private EntityMovement PlayerMovementData = new EntityMovement();
+
+
+
+    [SerializeField] AnimationClip RollingClip;
+
+    float rollDuration;
+    float rollTimer = 0f;
+
+    [Header("Booleans")]
+    public bool IsRolling { get; private set; }
+
 
     [Header("Animation")]
-    [SerializeField] private AnimatorController PlayerAnimatorController;
+    [SerializeField] AnimatorController PlayerAnimatorController;
+
+
+
 
     private Rigidbody2D playerRb;
     private Vector2 movementInput;
+    private Vector2 rollDirection;
 
-    private AnimHashGenerator animHashGenerator = new AnimHashGenerator(); 
-    public Dictionary<string, int> AnimationClipHashes { get; private set; } = new Dictionary<string, int>();
+
+
+    private AnimHashGenerator animHashGenerator = new AnimHashGenerator();
+    public Dictionary<string, int> AnimationClipHashes { get; set; } = new Dictionary<string, int>();
+
+
 
     public Direction CurrentDirection { get; private set; }
+    public Vector2 CurrentVelocity { get; private set; }
+
 
     private void Awake()
     {
         playerRb = GetComponent<Rigidbody2D>();
+        RollSpeed = moveSpeed + 2;
+
         animHashGenerator.GenerateAnimHash(AnimationClipHashes, PlayerAnimatorController);
     }
 
@@ -31,34 +56,44 @@ public class PlayerController : MonoBehaviour, IHasDirection
             Input.GetAxisRaw("Horizontal"),
             Input.GetAxisRaw("Vertical")
         ).normalized;
+
+        if (!IsRolling && Input.GetKeyDown(KeyCode.V) && movementInput != Vector2.zero)
+        {
+            IsRolling = true;
+            rollTimer = RollingClip.length;
+            rollDirection = movementInput;
+        }
     }
 
     private void FixedUpdate()
     {
-        if (movementInput != Vector2.zero)
+        if (IsRolling)
         {
+            rollTimer -= Time.fixedDeltaTime;
+
+            if (rollTimer <= 0f)
+            {
+                IsRolling = false;
+            }
+
+            Vector2 newPosition = playerRb.position + rollDirection * RollSpeed * Time.fixedDeltaTime;
+            playerRb.MovePosition(newPosition);
+            CurrentDirection = PlayerMovementData.GetDirectionFromInput(rollDirection.x, rollDirection.y);
+            CurrentVelocity = rollDirection * RollSpeed;
+        }
+        else if (movementInput != Vector2.zero)
+        {
+            // Normal movement
             Vector2 newPosition = playerRb.position + movementInput * moveSpeed * Time.fixedDeltaTime;
             playerRb.MovePosition(newPosition);
-            CurrentDirection = GetDirectionFromInput(movementInput.x, movementInput.y);
+            CurrentDirection = PlayerMovementData.GetDirectionFromInput(movementInput.x, movementInput.y);
+            CurrentVelocity = movementInput * moveSpeed;
         }
         else
         {
-            playerRb.linearVelocity = Vector2.zero;
+            // Idle
+            CurrentVelocity = Vector2.zero;
         }
     }
 
-    private Direction GetDirectionFromInput(float x, float y)
-    {
-        if (x == 0 && y == 0) return Direction.None;
-        if (x > 0 && y == 0) return Direction.Right;
-        if (x < 0 && y == 0) return Direction.Left;
-        if (x == 0 && y > 0) return Direction.Up;
-        if (x == 0 && y < 0) return Direction.Down;
-        if (x > 0 && y > 0) return Direction.UpRight;
-        if (x < 0 && y > 0) return Direction.UpLeft;
-        if (x > 0 && y < 0) return Direction.BottomRight;
-        if (x < 0 && y < 0) return Direction.BottomLeft;
-
-        return Direction.None;
-    }
 }

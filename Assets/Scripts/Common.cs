@@ -23,10 +23,20 @@ namespace Common
         Direction CurrentDirection { get; }
     }
 
+    public interface IHasVelocity
+    {
+        Vector2 CurrentVelocity { get; }
+    }
+
+    public interface IHasBooleans
+    {
+        bool IsRolling{ get;}
+    }
+
 
     public class AnimHashGenerator
     {
-        public void GenerateAnimHash(Dictionary<string, int> AnimationClipHashes , AnimatorController AnimController)
+        public void GenerateAnimHash(Dictionary<string, int> AnimationClipHashes, AnimatorController AnimController)
         {
             AnimationClipHashes.Clear();
             var clips = AnimController.animationClips;
@@ -38,4 +48,21 @@ namespace Common
         }
     }
 
+    public class EntityMovement
+    {
+        public Direction GetDirectionFromInput(float x, float y)
+        {
+            if (x == 0 && y == 0) return Direction.None;
+            if (x > 0 && y == 0) return Direction.Right;
+            if (x < 0 && y == 0) return Direction.Left;
+            if (x == 0 && y > 0) return Direction.Up;
+            if (x == 0 && y < 0) return Direction.Down;
+            if (x > 0 && y > 0) return Direction.UpRight;
+            if (x < 0 && y > 0) return Direction.UpLeft;
+            if (x > 0 && y < 0) return Direction.BottomRight;
+            if (x < 0 && y < 0) return Direction.BottomLeft;
+
+            return Direction.None;
+        }
+    }
 }

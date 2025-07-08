@@ -6,6 +6,7 @@ using Common;
 public abstract class AnimState : ScriptableObject
 {
     public string AnimationName;
-    
-    public abstract bool ShouldEnter(IHasDirection entity);
+    public int Priority = 0; 
+
+    public abstract bool ShouldEnter(IHasDirection entity, Vector2 velocity , IHasBooleans flags);
 }

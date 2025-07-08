@@ -324,10 +324,10 @@ GameObject:
   - component: {fileID: 604664137}
   - component: {fileID: 604664138}
   - component: {fileID: 604664139}
+  - component: {fileID: 604664143}
   - component: {fileID: 604664140}
   - component: {fileID: 604664141}
   - component: {fileID: 604664142}
-  - component: {fileID: 604664143}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -417,7 +417,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -2025646529
+  m_SortingLayerID: -943991621
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 4723107735738678597, guid: 9caf8e42af5acef46ba1ec5744040d99, type: 3}
@@ -493,6 +493,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
+  RollSpeed: 0
+  RollingClip: {fileID: 7400000, guid: b6010eb4b781c904d908c6d1093114ff, type: 2}
   PlayerAnimatorController: {fileID: 9100000, guid: 5a9371a806cc3224f98992eceaecd601, type: 2}
 --- !u!1 &619394800
 GameObject:
@@ -531,7 +533,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 000000003f164387
+  m_ApplyToSortingLayers: 000000003f164387bbd4bbc7
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0

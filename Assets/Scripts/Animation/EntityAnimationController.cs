@@ -9,11 +9,10 @@ public abstract class EntityAnimationController : MonoBehaviour
 
     private AnimatorC animatorC;
     private IHasDirection directionProvider;
+    private IHasVelocity VelocityProvider;
+    private IHasBooleans booleansProvider;
 
     private string currentAnimationName = "";
-
-
-
 
 
 
@@ -21,6 +20,9 @@ public abstract class EntityAnimationController : MonoBehaviour
     {
         animatorC = GetComponent<AnimatorC>();
         directionProvider = GetComponent<IHasDirection>();
+        VelocityProvider = GetComponent<IHasVelocity>();
+        booleansProvider = GetComponent<IHasBooleans>();
+
 
         if (directionProvider == null)
         {
@@ -30,19 +32,25 @@ public abstract class EntityAnimationController : MonoBehaviour
 
 
 
-
-
-
     public virtual void Animate(Dictionary<string, int> animationDict)
     {
-        if (animStateMachine == null || directionProvider == null) return;
 
-        foreach (var state in animStateMachine.states)
+        if (animStateMachine == null || directionProvider == null || VelocityProvider == null || booleansProvider == null) return;
+
+        var SortedStates = new List<AnimState>(animStateMachine.states);
+        SortedStates.Sort((a, b) => b.Priority.CompareTo(a.Priority));
+
+
+
+        foreach (var state in SortedStates)
         {
-            if (state.ShouldEnter(directionProvider) && state.AnimationName != currentAnimationName)
+            // Debug.Log($"Checking state: {state.AnimationName}, ShouldEnter: {state.ShouldEnter(directionProvider, VelocityProvider.CurrentVelocity)}, Current: {currentAnimationName}");
+            if (state.ShouldEnter(directionProvider, VelocityProvider.CurrentVelocity, booleansProvider) && state.AnimationName != currentAnimationName)
             {
                 if (animationDict.TryGetValue(state.AnimationName, out int hash))
                 {
+                    Debug.Log($"Switching to animation: {state.AnimationName}");
+
                     animatorC.ChangeAnimation(animationDict, hash);
                     currentAnimationName = state.AnimationName;
                 }
