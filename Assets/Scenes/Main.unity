@@ -344,7 +344,7 @@ Transform:
   m_GameObject: {fileID: 604664135}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.64, y: 0.57, z: 0.84901637}
+  m_LocalPosition: {x: -7.45, y: 11.12, z: 0.84901637}
   m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -363,7 +363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88f7ede0223dd744baa176e3fd9626a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animStateMachine: {fileID: 11400000, guid: fa33ba19cbd94334f9e22f1bf7485ee0, type: 2}
+  animStateMachine: {fileID: 11400000, guid: ea40babacd8df3b4b88b4f95a103a7d8, type: 2}
 --- !u!114 &604664139
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -417,7 +417,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -943991621
+  m_SortingLayerID: 1310585797
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 4723107735738678597, guid: 9caf8e42af5acef46ba1ec5744040d99, type: 3}
@@ -494,7 +494,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   RollSpeed: 0
+  RunAttackSpeed: 0
   RollingClip: {fileID: 7400000, guid: b6010eb4b781c904d908c6d1093114ff, type: 2}
+  RunAttackingClip: {fileID: 7400000, guid: feccdd2aeb0b2594dbe0988606566046, type: 2}
+  KickAttackClip: {fileID: 7400000, guid: 53895e940beef5d4d8e457c21e7a39dc, type: 2}
+  castingClip: {fileID: 7400000, guid: 15feeeb71657413429bdfe7e89423e20, type: 2}
   PlayerAnimatorController: {fileID: 9100000, guid: 5a9371a806cc3224f98992eceaecd601, type: 2}
 --- !u!1 &619394800
 GameObject:
@@ -533,7 +537,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 000000003f164387bbd4bbc7
+  m_ApplyToSortingLayers: 00000000c5f31d4e
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0

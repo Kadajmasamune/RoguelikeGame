@@ -30,7 +30,12 @@ namespace Common
 
     public interface IHasBooleans
     {
-        bool IsRolling{ get;}
+        bool IsRolling { get; }
+        bool IsRunning { get; }
+        bool IsAttacking { get; }
+        bool IsLockedOn { get; }
+        bool IsCasting { get; }
+        bool IsHeavyAttacking { get; }
     }
 
 
@@ -63,6 +68,18 @@ namespace Common
             if (x < 0 && y < 0) return Direction.BottomLeft;
 
             return Direction.None;
+        }
+
+        public Vector2 DirectionToVector(Direction dir)
+        {
+            return dir switch
+            {
+                Direction.Up => Vector2.up,
+                Direction.Down => Vector2.down,
+                Direction.Left => Vector2.left,
+                Direction.Right => Vector2.right,
+                _ => Vector2.zero
+            };
         }
     }
 }

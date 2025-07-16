@@ -21,8 +21,8 @@ public class AnimatorC : MonoBehaviour
 
     public void ChangeAnimation(Dictionary<string, int> animationDict, int targetHash, float delay = 0.0f, float crossfade = 0.05f)
     {
-        if (currentAnimationHash == targetHash || animator.IsInTransition(0)) return;
-        
+        if (currentAnimationHash == targetHash) return;
+
         if (delay > 0f)
         {
             StartCoroutine(WaitAndPlay());
@@ -40,7 +40,7 @@ public class AnimatorC : MonoBehaviour
 
         void Play()
         {
-            animator.CrossFade(targetHash, crossfade);
+            animator.CrossFadeInFixedTime(targetHash, crossfade);
             currentAnimationHash = targetHash;
         }
     }

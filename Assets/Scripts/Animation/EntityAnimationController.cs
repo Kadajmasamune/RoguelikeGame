@@ -14,8 +14,6 @@ public abstract class EntityAnimationController : MonoBehaviour
 
     private string currentAnimationName = "";
 
-
-
     private void Start()
     {
         animatorC = GetComponent<AnimatorC>();
@@ -23,34 +21,28 @@ public abstract class EntityAnimationController : MonoBehaviour
         VelocityProvider = GetComponent<IHasVelocity>();
         booleansProvider = GetComponent<IHasBooleans>();
 
-
         if (directionProvider == null)
         {
             Debug.LogError($"{name} must implement IHasDirection.");
         }
     }
 
-
-
     public virtual void Animate(Dictionary<string, int> animationDict)
     {
-
         if (animStateMachine == null || directionProvider == null || VelocityProvider == null || booleansProvider == null) return;
 
         var SortedStates = new List<AnimState>(animStateMachine.states);
         SortedStates.Sort((a, b) => b.Priority.CompareTo(a.Priority));
 
-
-
         foreach (var state in SortedStates)
         {
-            // Debug.Log($"Checking state: {state.AnimationName}, ShouldEnter: {state.ShouldEnter(directionProvider, VelocityProvider.CurrentVelocity)}, Current: {currentAnimationName}");
-            if (state.ShouldEnter(directionProvider, VelocityProvider.CurrentVelocity, booleansProvider) && state.AnimationName != currentAnimationName)
+            if (state.ShouldEnter(directionProvider, VelocityProvider.CurrentVelocity, booleansProvider))
             {
+                if (state.AnimationName == currentAnimationName)
+                    return; // Skip if same animation already playing
+
                 if (animationDict.TryGetValue(state.AnimationName, out int hash))
                 {
-                    Debug.Log($"Switching to animation: {state.AnimationName}");
-
                     animatorC.ChangeAnimation(animationDict, hash);
                     currentAnimationName = state.AnimationName;
                 }

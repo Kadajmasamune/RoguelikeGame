@@ -1,7 +1,6 @@
 using UnityEngine;
 using Common;
 
-
 [CreateAssetMenu(menuName = "AnimationStateMachine/AnimState")]
 public abstract class AnimState : ScriptableObject
 {
